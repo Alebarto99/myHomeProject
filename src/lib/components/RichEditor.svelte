@@ -50,7 +50,7 @@ function handleSubmit(e) {
       <option value={category.id} selected>{category.title}</option>
     {/each}
   </select>
-  <div style="display: flex; flex-direction: row; align-items: center; justify-content: center;">
+  <div style="display: flex; flex-direction: row; gap: 15px; align-items: center; justify-content: center;">
     <Button type="sumbit" design="save">
       <span>{initialData ? 'Сохранить изменения' : 'Добавить заметку'}</span>
     </Button>

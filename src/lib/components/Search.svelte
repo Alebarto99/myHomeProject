@@ -33,7 +33,7 @@ function clearInput() {
 		padding: 0 0 0 11px;
 		border-radius: 10px;
 		border: 1px solid var(--border);
-        box-shadow: 2px 2px 8px 0 rgba(0, 0, 0, 0.3) inset;
+        box-shadow: var(--shadow);
 		
 		input{
 			background: transparent;

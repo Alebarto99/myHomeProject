@@ -1,6 +1,7 @@
 <script lang="ts">
 let {
     type = $bindable(`button`),
+    title = '',
     design,
     onclick = $bindable(),
     children
@@ -13,7 +14,9 @@ let {
 <button 
 onclick={onclick} 
 type={type} 
-class={design}>
+class={design}
+title={title}
+>
 {#if children}
 {@render children()}
 {/if}

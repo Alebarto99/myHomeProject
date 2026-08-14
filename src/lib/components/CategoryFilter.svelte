@@ -113,7 +113,7 @@
     <span>Категории</span>
     {#if !isEditing}
       <!-- Кнопка перехода в режим редактирования -->
-       <Button design='edit' onclick={startEditing}>
+       <Button design='edit' onclick={startEditing} title={'Добавить, удалить категории'}>
         <span>Настройка</span>
       </Button>
     {:else}
@@ -154,7 +154,7 @@
             <!-- Защита: Кнопку удаления показываем для всех, КРОМЕ категории "Все" (ID 0) -->
             {#if category.id !== 0}
               <Button design="delete" onclick={() => requestRemoveCategory(category.id)} >
-                <span>x</span>
+                <span>X</span>
               </Button>
             {/if}
           </div>

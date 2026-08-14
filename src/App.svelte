@@ -9,9 +9,10 @@ import CategoryFilter from "./lib/components/CategoryFilter.svelte";
 import Search from "./lib/components/Search.svelte";
 import {fade} from "svelte/transition"
 
+let windowWidth = $state(0)
+let theme_key = 'app_theme';
 let note_key = 'storage_notes'
 let cat_key = 'storage_categories';
-let theme_key = 'app_theme';
 let loadTheme = localStorage.getItem(theme_key);
 let loadCats = localStorage.getItem(cat_key);
 let loadNotes = localStorage.getItem(note_key)
@@ -124,6 +125,7 @@ function handleUpdateCategories(newCategoriesList) {
 }
 
 </script>
+<svelte:window bind:innerWidth={windowWidth} />
 
 {#if activePage === 'home'}
   <aside>
@@ -133,9 +135,12 @@ function handleUpdateCategories(newCategoriesList) {
     notes={notesList}
     bind:activeCategoryId={activeCategory}
     onupdatecats={handleUpdateCategories}/>
-    <Button design='edit'  onclick={() => toggleTheme()}>
-      <span>сменить тему</span>
-    </Button>
+    {#if windowWidth > 600}
+      <Button design='edit'  onclick={() => toggleTheme()}>
+        <span>сменить тему</span>
+      </Button>
+      
+    {/if}
 </aside>
 <main>
   <Button design="primary" onclick={() => activePage = 'editor'}>

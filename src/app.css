@@ -13,6 +13,7 @@
     --entity-text-2: #83A3FF;
     --entity-text-3: #94A2B5;
     --tag-bg: #293646;
+    --shadow: 2px 2px 8px 0 color-mix(in srgb, var(--primary) 16%, transparent) inset;
 
 
 }
@@ -33,6 +34,8 @@
     --entity-text-2: #94A2B5;
     --entity-text-3: #94A2B5;
     --tag-bg: #D1D9E4;
+    --shadow: 2px 2px 8px 0 rgba(0, 0, 0, 0.3) inset;
+
 
 
 }
@@ -108,6 +111,11 @@ main{
     text-align: left;
     white-space: pre-wrap;
     color: var(--entity-text-1); 
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Количество строк */
+    line-clamp: 3;         /* Стандартное свойство */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .card-tags{
     display: flex;
@@ -139,33 +147,54 @@ main{
 button{
   background-color: red;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
   color: var(--text);
+  transition: background-color .4s ease;
 
   &.primary{
     padding: 9px 14px;
     background-color: color-mix(in srgb, var(--primary) 16%, transparent);
     color: var(--primary);
+
+    &:hover{
+      background-color: color-mix(in srgb, var(--primary) 25%, transparent);
+      border: 1px solid var(--primary);
+    }
   }
   
   &.save{
     padding: 9px 14px;
     background-color: color-mix(in srgb, var(--success) 16%, transparent);
     color: var(--success);
+
+    &:hover{
+      background-color: color-mix(in srgb, var(--success) 25%, transparent);
+      border: 1px solid var(--success);
+    }
   }
 
   &.delete{
     padding: 9px 14px;
     background-color: color-mix(in srgb, var(--danger) 16%, transparent);
     color: var(--danger);
+
+    &:hover{
+      background-color: color-mix(in srgb, var(--danger) 25%, transparent);
+      border: 1px solid var(--danger);
+    }
   }
 
   &.edit{
     padding: 9px 14px;
     background-color: color-mix(in srgb, var(--warning) 16%, transparent);
     color: var(--warning);
+
+    &:hover{
+      background-color: color-mix(in srgb, var(--warning) 25%, transparent);
+      border: 1px solid var(--warning);
+    }
   }
 
   &.info{
@@ -186,7 +215,8 @@ aside{
   flex-direction: column;
   gap: 10px;
   padding: 0px 5px 5px 0;
-  min-width: 290px;
+  min-width: 300px;
+  max-width: 300px;
 
   .sidebar-categories{
     flex-grow: 1;
@@ -218,30 +248,56 @@ aside{
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            padding: 5px;
+            align-items: center;
+
+            padding: 10px 15px;
             border-radius: 5px;
             background-color: var(--entity-item-bg);
             color: var(--text);
-            border: 2px solid transparent;
+            border: 2px solid var(--border);
             transition: border .4s ease;
 
             &:hover{
               border: 2px solid var(--primary);
 
             }
+            button{
+              background: transparent;
+              font-size: large;
+              transition: background-color .4s ease;
+              padding: 0;
+              width: 25px;
+              height: 100%;
+
+
+              &:hover{
+                background-color: color-mix(in srgb, var(--danger) 16%, transparent);
+                color: var(--danger);
+              }
+            }
           }
           .add-cat-box{
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
             input{
               color: var(--text);
               border-radius: 5px;
               background-color: var(--entity-item-bg);
+              border: 2px solid var(--border);
+              flex-grow: 1;
               background-color: --;
 
               &:focus{
                 outline: 1px solid var(--primary);
               }
             }
+            button{
+              font-size: 34px;
+              padding: 0;
+              width: 50px;
 
+            }
           }
         }
       }
@@ -249,6 +305,25 @@ aside{
   }
 }
 
+input, textarea, select{
+		outline: none;
+		border: 1px solid rgba(0, 0, 0, 0.349);
+    border-radius: 5px;
+		padding: 11px 5px;
+		flex-grow: 0;
+		font-size: large;
+		color: var(--text-color);
+		min-width: 100px;
+		background-color: var(--entity-item-bg);
+		color: var(--text);
+
+		&:focus{
+			outline: 1px solid var(--primary);
+		}
+	}
+
+
+
 #app{
   display: flex;
   flex-direction: row;
@@ -260,7 +335,7 @@ aside{
 }
 
 
-@media (max-width: 650px){
+@media (max-width: 600px){
   #app{
     display: flex;
     flex-direction: column;
@@ -269,278 +344,3 @@ aside{
     border: 0;
   }
 }
-
-
-
-
-
-/* [data-theme="dark"]{
-    --app-bg: #0d1118;
-    --danger: #ff7272;
-    --warning: #f0ad45;
-    --success: #39c99a;
-    --primary: #7198ff;
-    --muted: #99a7ba;
-    --text: #edf2f8;
-    --border: #2C394B;
-    --entity-item: #171E28;
-    --entity-text-1: #94A2B5;
-
-}
-
-[data-theme="light"]{
-    --app-bg: #E8ECF0;
-    --danger: #d44343;
-    --warning: #c47608;
-    --success: #138a62;
-    --primary: #2856ca;
-    --muted: #667085;
-    --text: #172033;
-    --border: #DDE4EE;
-    --entity-item: #ffffff;
-    --entity-text-1: #94A2B5;
-
-}
-
-:root{
-  --outer-border: 10px;
-  --padding: 20px;
-  --inner-border: calc(var(--outer-border) - var(--padding));
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--text)
-}
-
-*{
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-  font-family: Inter, system-ui, sans-serif;
-  border: 1px solid white;
-}
-
-
-button{
-  background-color: red;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  color: var(--text);
-
-  &.primary{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--primary) 16%, transparent);
-    color: var(--primary);
-  }
-  
-  &.save{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--success) 16%, transparent);
-    color: var(--success);
-  }
-
-  &.delete{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--danger) 16%, transparent);
-    color: var(--danger);
-  }
-
-  &.edit{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--warning) 16%, transparent);
-    color: var(--warning);
-  }
-
-  &.info{
-    padding: 9px 14px;
-    background: transparent;
-    color: var(--text);
-    
-    &.active{
-      border: 1px solid var(--primary);
-      color: var(--primary);
-    }
-  }
-
-  &.transparent{
-    border: 0;
-    background: transparent;
-  }
-
-  &.text-info{
-    text-align: left;
-
-    &.title{
-
-    }
-
-    &.description{
-      
-    }
-  }
-}
-
-span{
-
-  .tags{
-
-  }
-  .category{
-
-  }
-}
-
-
-
-svg{
-
-}
-
-aside{
-  display: flex;
-  flex-direction: column;
-  gap:10px;
-  width: clamp(300px, 350px, 400px);
-  border-right: 1px solid var(--border);
-  padding: 5px;
-}
-
-main{
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background: transparent;
-  padding: 5px;
-  gap:10px;
-  max-width: 100%;
-  background-color: #2856ca;
-  
-}
-
-#app{
-  display: flex;
-  flex-direction: row;
-  background-color: var(--app-bg);
-  height: 100svh;
-  width: 100svw;
-  overflow: auto;
-} */
-
-
-/* @media (max-width: 600px) {
-  aside{
-    border: 0;
-    width: 100%;
-
-  }
-
-  #app{
-    display: flex;
-    flex-direction:column;
-  }
-} */
-
-
-
-
-
-
-
-
-
-/* 
-
-
-:root{
-  --bg: #f4f6fa;
-  --border: rgb(187, 192, 199);
-  --text-color: #172033;
-  --surface: #e1e1e2;
-  font-family: Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-}
-
-
-
-
-main{
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  overflow: auto;
-  scrollbar-width: none;
-}
-
-*{
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  color: black;
-}
-
-.searchbox, textarea{
-		box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5) inset;
-		border-radius: 5px;
-
-
-  &:focus{
-    box-shadow: 0px 0px 0px 1px rgb(0, 0, 0, 0.2), 0px 0px 10px 1px rgba(12, 12, 12, 0.6);
-
-  }
-}
-
-
-
-button{
-  border: 2px solid transparent;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;		
-  transition: all .05s ease;
-  margin: 5px;
-  color: white;
-
-  
-}
-
-aside{
-  width: clamp(200px, 250px, 350px);
-  border-right: 1px solid var(--border);
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
- }
-
-html{
-}
-
-#app{
-  background-color: var(--bg);
-  height: 100svh;
-  width: 100svw;
-  padding: 5px;
-
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-  
-}
-
-@media (max-width: 650px) {
-  aside{
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    width: 100%;
-    border: 0;
-  }
-
-   #app{
-     display: flex;
-     flex-direction: column;
-     gap: 5px;
-    } 
-
-} */
