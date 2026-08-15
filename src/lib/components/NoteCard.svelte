@@ -14,7 +14,6 @@
     } = $props();
 </script>
 
-
 <div class="card" transition:fly={{x: 300, duration: 300}}>
     <div class="card-header" >
         <Button type="button" design='card-title' onclick={onclickheadline}>

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "myhomeproject",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "identifier": "alebarto.dev",
   "build": {
     "frontendDist": "../dist",
@@ -37,6 +37,16 @@
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlENjg5NzVCMDcwQTdCQTYKUldTbWV3b0hXNWRvblVCZlRQelloQ1lESGw0OXpqczlWUHZvc0QyaURIa3k1V0FDejVzSXJiNDcK",
+      "endpoints": [
+        "https://github.com/Alebarto99/myHomeProject.git/releases/latest/download/latest.json"
+      ]
     }
   }
 }
+
