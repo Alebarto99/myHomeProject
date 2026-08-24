@@ -1,29 +1,32 @@
 <script lang='ts'>
-import Settings from "./lib/components/Settings.svelte";
-import RichEditor from "./lib/components/RichEditor.svelte";
+import Settings from "./lib/components/pages/Settings.svelte";
+import RichEditor from "./lib/components/pages/RichEditor.svelte";
 import Modal from "./lib/components/Modal.svelte";
+import Updater from "./lib/components/Updater.svelte";
 
 import NoteCard from "./lib/components/NoteCard.svelte";
 import Button from "./lib/components/Button.svelte";
-import CategoryFilter from "./lib/components/CategoryFilter.svelte";
+import CategoryFilter from "./lib/components/pages/CategoryFilter.svelte";
 import Search from "./lib/components/Search.svelte";
 import {fade} from "svelte/transition"
+import { onMount } from "svelte";
+  import NoteCardVariants from "./lib/components/NoteCard-variants.svelte";
 
 let windowWidth = $state(0)
 let theme_key = 'app_theme';
-let note_key = 'storage_notes'
-let cat_key = 'storage_categories';
 let loadTheme = localStorage.getItem(theme_key);
-let loadCats = localStorage.getItem(cat_key);
-let loadNotes = localStorage.getItem(note_key)
 let currentTheme = $state(localStorage.getItem(theme_key) || getSystemTheme());
+let note_key = 'storage_notes'
+let loadNotes = localStorage.getItem(note_key)
 let notesList = $state(loadNotes ? JSON.parse(loadNotes) : [])
-let activePage = $state('home')
+let cat_key = 'storage_categories';
+let loadCats = localStorage.getItem(cat_key);
 let categories = $state(
   loadCats ? JSON.parse(loadCats) : [
     { id: 0, title: "Все" },
   ]);
 let activeCategory = $state(0);
+let activePage = $state('home')
 let searchQuery = $state('')
 let editingNoteId = $state<number | null>(null);
 let isConfirmOpen = $state(false);
@@ -38,16 +41,6 @@ $effect(() => {
 $effect(() => {
   localStorage.setItem(cat_key, JSON.stringify(categories));
 });
-
-$effect(() => {
-  localStorage.setItem(theme_key, currentTheme);
-  document.documentElement.setAttribute('data-theme', currentTheme);
-});
-
-function toggleTheme() {
-  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-}
-
 
 function getSystemTheme(): 'dark' | 'light' {
   // Проверяем, запущен ли код в браузере (чтобы не было ошибок при SSR)
@@ -124,11 +117,20 @@ function handleUpdateCategories(newCategoriesList) {
   categories = newCategoriesList;
 }
 
+$effect(() => {
+  localStorage.setItem(theme_key, currentTheme);
+  document.documentElement.setAttribute('data-theme', currentTheme);
+});
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+}
+
 </script>
 <svelte:window bind:innerWidth={windowWidth} />
 
 {#if activePage === 'home'}
-  <aside>
+   <aside>
     <Search placeholder='Поиск...' title='Поиск карточек по заголовку, описанию, тегам' bind:value={searchQuery}/>
     <CategoryFilter 
     catList={categories}
@@ -136,10 +138,12 @@ function handleUpdateCategories(newCategoriesList) {
     bind:activeCategoryId={activeCategory}
     onupdatecats={handleUpdateCategories}/>
     {#if windowWidth > 600}
-      <Button design='edit'  onclick={() => toggleTheme()}>
-        <span>сменить тему</span>
-      </Button>
-      
+    <!-- <Button type='button' design="primary" onclick={() => activePage = 'settings'}>
+      <span>
+        Настройки
+      </span>
+    </Button> -->
+    <Updater />
     {/if}
 </aside>
 <main>
@@ -176,18 +180,19 @@ function handleUpdateCategories(newCategoriesList) {
     onconfirm={confirmRemoveNote}
     oncancel={handleCancelDelete}
   />
-
-
-  </main>
-  {:else if activePage === 'editor'}
-    <RichEditor 
+</main>
+{:else if activePage === 'editor'}
+  <RichEditor 
     initialData={noteToEdit}
     {categories} 
     onclickExit={() => {activePage = 'home'; editingNoteId = null;}} 
     onsave={handleSaveNote}/>
-  {:else if activePage === 'settings'}
-    <Settings />
-  {/if}
+<!-- {:else if activePage === 'settings'}
+    <Settings 
+    {theme_key}
+    {currentTheme}
+    onclickExit={() => activePage = 'home'}/> -->
+{/if}
 
 <style>
  .empty-notes{

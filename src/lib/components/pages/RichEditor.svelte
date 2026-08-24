@@ -1,7 +1,7 @@
 <script>
-  import Button from "./Button.svelte";
-  import TextArea from "./TextArea.svelte";
-  import Input from "./Input.svelte";
+  import Button from "../Button.svelte";
+  import TextArea from "../TextArea.svelte";
+  import Input from "../Input.svelte";
 
 let {
   onsave,
@@ -40,7 +40,7 @@ function handleSubmit(e) {
 
 </script>
 
-
+<main>
 <form class="editor-form" onsubmit={handleSubmit}>
   <Input placeholder="Заголовок заметки" bind:value={formState.title}/>
   <TextArea placeholder="Описание заметки" bind:value={formState.description}/>
@@ -58,8 +58,8 @@ function handleSubmit(e) {
       <span>Отменить</span>
     </Button>
   </div>
-
 </form>
+</main>
 
 
 <style>

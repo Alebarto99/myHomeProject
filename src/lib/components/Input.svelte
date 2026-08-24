@@ -1,7 +1,9 @@
 <script lang="ts">
 let {
-    value = $bindable(''),
-    placeholder = 'Введите запрос'
+  type = 'text',
+  value = $bindable(''),
+  onkeydown = $bindable(),
+  placeholder = 'Введите запрос'
 } = $props();
 
 let inputRef = $state<HTMLInputElement | null>(null);
@@ -14,7 +16,10 @@ function clearInput() {
 </script>
 
 <style>
-	
+	input{
+    /* pointer-events: none; */
+    /* display: block; */
+  }
 </style>
 	<!-- Будет красивый инпут -->
-	<input spellcheck="true" bind:this={inputRef} type="text" {placeholder} bind:value>
+	<input spellcheck="true" bind:this={inputRef} type={type} {placeholder} bind:value onkeydown={onkeydown}>

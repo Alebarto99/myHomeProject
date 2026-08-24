@@ -1,23 +1,29 @@
 <script lang="ts">
-let {
-    type = $bindable(`button`),
+  import type { Snippet } from 'svelte';
+
+  let {
+    type = 'button',
     title = '',
-    design,
-    onclick = $bindable(),
+    design = '',
+    disabled = false,
+    onclick,
     children
-} = $props();
+  } = $props<{
+    type?: 'button' | 'submit' | 'reset';
+    title?: string;
+    design?: string;
+    disabled?: boolean;
+    onclick?: (event: MouseEvent) => void;
+    children?: Snippet;
+  }>();
 </script>
 
-<style>
-</style>
-
-<button 
-onclick={onclick} 
-type={type} 
-class={design}
-title={title}
+<button
+  type={type}
+  title={title}
+  class={design}
+  disabled={disabled}
+  onclick={onclick}
 >
-{#if children}
-{@render children()}
-{/if}
+  {@render children?.()}
 </button>

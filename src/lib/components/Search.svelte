@@ -66,14 +66,15 @@ function clearInput() {
 		.clear{
 			display: none;
 			background: transparent;
-			color: black;
+			color: var(--text);
 			margin: 0px;
 			padding: 0 15px 0 5px;
 			font-size: 18px;
+			transition: color .4s ease;
 
    		 &:hover{
 			color: #e25555;
-			stroke: #e25555;
+			/* stroke: #e25555; */
 			}
 		}
 	}

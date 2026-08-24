@@ -1,4 +1,9 @@
 <script lang="ts">
+import Button from "./Button.svelte";
+
+
+
+
   let {
     isOpen = $bindable(false),
     title = 'Подтвердите действие',
@@ -31,12 +36,16 @@
 
 <!-- Нативное диалоговое окно. oncancel перехватывает закрытие по кнопке Esc -->
 <dialog bind:this={dialogRef} oncancel={handleCancel}>
-  <div class="modal-content">
+  <div class="card">
     <h3>{title}</h3>
     <p>{message}</p>
     <div class="modal-actions">
-      <button class="btn-confirm" onclick={handleConfirm}>Да, удалить</button>
-      <button class="btn-cancel" onclick={handleCancel}>Отмена</button>
+    <Button design='primary' onclick={handleConfirm}>
+      <span>удалить</span>
+    </Button>
+    <Button design='delete' onclick={handleCancel}>
+      <span>Отменить</span>
+    </Button>
     </div>
   </div>
 </dialog>
@@ -45,16 +54,16 @@
   dialog {
     border: 1px solid var(--border, #ccc);
     border-radius: 12px;
-    padding: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     background: var(--surface, white);
     max-width: 400px;
     width: 100%;
     margin: auto;
+    color: var(--text);
     
     /* Стилизация встроенного размытия заднего фона браузера */
     &::backdrop {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(2px);
     }
   }
@@ -72,23 +81,5 @@
     justify-content: flex-end;
     gap: 10px;
     margin-top: 5px;
-    
-    button {
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      border: 1px solid transparent;
-    }
-    .btn-confirm {
-      background: #e25555;
-      color: white;
-      &:hover { background: #bb4646; }
-    }
-    .btn-cancel {
-      background: #e0e0e0;
-      color: #333;
-      &:hover { background: #d0d0d0; }
-    }
   }
 </style>
