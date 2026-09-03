@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UI Kit — 7 стилей + палитры + кастомный select</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Neucha&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   БАЗА
+============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#07070b;color:#e8e9ee;padding:20px}
+
+/* ---------- Навигация ---------- */
+.nav{position:sticky;top:12px;z-index:50;max-width:1150px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+  background:rgba(255,255,255,.06);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px}
+.nav a{color:#c9cdd8;text-decoration:none;font-size:13px;font-weight:600;padding:8px 14px;border-radius:9px;transition:.15s}
+.nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* ---------- Каркас секции ---------- */
+.showcase{max-width:1150px;margin:36px auto;border-radius:28px;padding:44px;transition:background .3s,color .3s;scroll-margin-top:90px}
+.showcase[data-theme="dark"]{color-scheme:dark}
+.showcase[data-theme="light"]{color-scheme:light}
+
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:30px}
+.num{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.5;margin-bottom:6px}
+.showcase h1{font-size:26px;letter-spacing:-.02em;font-weight:800}
+.sub{font-size:14px;opacity:.65;margin-top:6px;max-width:560px}
+.theme-toggle{border:none;cursor:pointer;width:46px;height:46px;border-radius:13px;font-size:18px;display:grid;place-items:center;flex-shrink:0;transition:.2s}
+
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media(max-width:880px){.layout{grid-template-columns:1fr}}
+.panel{padding:28px;display:grid;gap:18px}
+.panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;opacity:.5}
+.field label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.6;margin-bottom:8px}
+
+/* ============================================================
+   БАЗОВЫЕ КОМПОНЕНТЫ
+============================================================ */
+.input{width:100%;font:inherit;font-size:14px;outline:none;transition:.15s}
+
+.btn{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.btn.icon{width:42px;padding:0;font-size:16px}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+
+.checkbox{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;user-select:none}
+.checkbox input{position:absolute;opacity:0;width:0;height:0}
+.box{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;transition:.15s;flex-shrink:0}
+.box::after{content:'✓';font-size:12px;font-weight:900;color:#fff;opacity:0;transform:scale(.4);transition:.15s}
+.checkbox input:checked+.box::after{opacity:1;transform:scale(1)}
+
+.card{display:flex;flex-direction:column;gap:12px;padding:28px}
+.category{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+.card-title{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.card-desc{font-size:14px;line-height:1.6;opacity:.75}
+.tags{display:flex;gap:8px;flex-wrap:wrap}
+.tags span{font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px}
+.card-actions{display:flex;gap:10px;margin-top:auto;padding-top:6px}
+
+/* ============================================================
+   КАСТОМНЫЙ SELECT — базовая механика
+   Нативный <select> остаётся в разметке (значение, формы, change),
+   видимая часть — кнопка + стилизованный список.
+============================================================ */
+.select-wrap{position:relative}
+.select-wrap select{display:none}                 /* скрыт, но живёт для форм */
+.cs-btn{width:100%;font:inherit;font-size:14px;color:inherit;text-align:left;cursor:pointer;border:none;outline:none;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;transition:.15s}
+.cs-value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-value.ph{opacity:.55}
+.cs-arrow{flex-shrink:0;font-size:13px;opacity:.7;transition:transform .2s}
+.cs[data-open="true"] .cs-arrow{transform:rotate(180deg)}
+.cs-list{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;margin:0;padding:6px;list-style:none;
+  max-height:236px;overflow:auto;display:none}
+.cs[data-open="true"] .cs-list{display:block;animation:csIn .16s ease}
+@keyframes csIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.cs-option{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 11px;font-size:14px;border-radius:7px;cursor:pointer}
+.cs-option.ph{opacity:.5}
+.cs-option[aria-selected="true"]::after{content:'✓';font-size:12px;font-weight:900}
+
+/* ============================================================
+   1. МИНИМАЛИЗМ
+============================================================ */
+.d-minimal[data-theme="light"]{--bg:#f6f7f9;--surface:#fff;--surface2:#f0f1f4;--text:#181a20;--muted:#6d7280;
+  --border:#e4e6eb;--accent:#4f6ef7;--primary:#181a20;--primary-h:#2b2d35;--primary-text:#fff;--ring:rgba(79,110,247,.22);--chip:#f0f1f4}
+.d-minimal[data-theme="dark"]{--bg:#0e0f13;--surface:#15161b;--surface2:#1e2027;--text:#f4f5f7;--muted:#8f95a3;
+  --border:#272a33;--accent:#6d8bff;--primary:#f4f5f7;--primary-h:#dcdee4;--primary-text:#0e0f13;--ring:rgba(109,139,255,.25);--chip:#1e2027}
+.d-minimal{background:var(--bg);color:var(--text)}
+.d-minimal .theme-toggle{background:var(--surface);border:1px solid var(--border)}
+.d-minimal .panel,.d-minimal .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+.d-minimal .input{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:11px 14px}
+.d-minimal .input::placeholder{color:var(--muted)}
+.d-minimal .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
+.d-minimal .btn{border-radius:9px}
+.d-minimal .btn.primary{background:var(--primary);color:var(--primary-text)}
+.d-minimal .btn.primary:hover{background:var(--primary-h)}
+.d-minimal .btn.secondary{background:var(--surface2);color:var(--text)}
+.d-minimal .btn.ghost{background:transparent;color:var(--muted)}
+.d-minimal .btn.ghost:hover{background:var(--surface2);color:var(--text)}
+.d-minimal .checkbox .box{border:1.5px solid var(--border);background:var(--surface)}
+.d-minimal .checkbox input:checked+.box{background:var(--primary);border-color:var(--primary)}
+.d-minimal .checkbox input:checked+.box::after{color:var(--primary-text)}
+.d-minimal .category{background:var(--chip);color:var(--muted)}
+.d-minimal .tags span{background:var(--chip);color:var(--muted)}
+/* скин select */
+.d-minimal .cs-btn{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 14px}
+.d-minimal .cs-btn:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
+.d-minimal .cs-list{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(16,24,40,.14)}
+.d-minimal .cs-option:hover,.d-minimal .cs-option.active{background:var(--surface2)}
+.d-minimal .cs-option[aria-selected="true"]{color:var(--accent);font-weight:700}
+
+/* ============================================================
+   2. ГЛАССМОРФИЗМ
+============================================================ */
+.d-glass[data-theme="light"]{--text:#221d3a;--muted:#6b6488;--glass:rgba(255,255,255,.5);--glass2:rgba(255,255,255,.75);
+  --gborder:rgba(255,255,255,.7);--chip:rgba(255,255,255,.55);
+  background:radial-gradient(640px 420px at 12% 18%,#ffd2e6,transparent 62%),
+    radial-gradient(720px 480px at 88% 22%,#c9e2ff,transparent 62%),
+    radial-gradient(620px 520px at 50% 98%,#d9ccff,transparent 62%),#f2eefb}
+.d-glass[data-theme="dark"]{--text:#f1eefb;--muted:#a89fc9;--glass:rgba(28,22,58,.42);--glass2:rgba(48,40,96,.5);
+  --gborder:rgba(255,255,255,.13);--chip:rgba(255,255,255,.09);
+  background:radial-gradient(640px 420px at 12% 18%,#3b1d78,transparent 62%),
+    radial-gradient(720px 480px at 88% 22%,#122a66,transparent 62%),
+    radial-gradient(620px 520px at 50% 98%,#5c1747,transparent 62%),#0b0a17}
+.d-glass{color:var(--text)}
+.d-glass .panel,.d-glass .card,.d-glass .theme-toggle{background:var(--glass);border:1px solid var(--gborder);border-radius:18px;
+  backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);box-shadow:0 8px 32px rgba(25,15,60,.14)}
+.d-glass .input{background:var(--glass2);backdrop-filter:blur(8px);border:1px solid var(--gborder);color:var(--text);border-radius:12px;padding:12px 15px}
+.d-glass .input::placeholder{color:var(--muted)}
+.d-glass .input:focus{border-color:#a78bfa;box-shadow:0 0 0 4px rgba(139,92,246,.2)}
+.d-glass .btn{border-radius:12px}
+.d-glass .btn.primary{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;box-shadow:0 6px 18px rgba(139,92,246,.35)}
+.d-glass .btn.primary:hover{filter:brightness(1.07)}
+.d-glass .btn.secondary{background:var(--glass2);border:1px solid var(--gborder);color:var(--text);backdrop-filter:blur(8px)}
+.d-glass .btn.ghost{background:transparent;color:var(--muted)}
+.d-glass .btn.ghost:hover{background:var(--chip);color:var(--text)}
+.d-glass .checkbox .box{border:1.5px solid var(--gborder);background:var(--glass2)}
+.d-glass .checkbox input:checked+.box{background:linear-gradient(135deg,#8b5cf6,#ec4899);border-color:transparent}
+.d-glass .category{background:var(--chip);border:1px solid var(--gborder);color:var(--text)}
+.d-glass .tags span{background:var(--chip);border:1px solid var(--gborder);color:var(--muted)}
+/* скин select */
+.d-glass .cs-btn{background:var(--glass2);border:1px solid var(--gborder);border-radius:12px;padding:12px 15px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.d-glass .cs-btn:focus-visible{border-color:#a78bfa;box-shadow:0 0 0 4px rgba(139,92,246,.2)}
+.d-glass .cs-list{background:var(--glass2);border:1px solid var(--gborder);border-radius:12px;
+  backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
+  box-shadow:0 14px 38px rgba(25,15,60,.22)}
+.d-glass .cs-option{border-radius:8px}
+.d-glass .cs-option:hover,.d-glass .cs-option.active{background:var(--chip)}
+.d-glass .cs-option[aria-selected="true"]{font-weight:700}
+
+/* ============================================================
+   3. НЕОМОРФИЗМ
+============================================================ */
+.d-neu[data-theme="light"]{--bg:#e3e7f0;--text:#2b3040;--muted:#7a8095;--accent:#6c5ce7;
+  --out:7px 7px 14px #c5cbd9,-7px -7px 14px #fff;--out-sm:4px 4px 9px #c5cbd9,-4px -4px 9px #fff;
+  --inset:inset 3px 3px 7px #c5cbd9,inset -3px -3px 7px #fff}
+.d-neu[data-theme="dark"]{--bg:#24262c;--text:#e8eaf0;--muted:#8b90a0;--accent:#8b7cf7;
+  --out:7px 7px 14px #1a1c21,-7px -7px 14px #2e3138;--out-sm:4px 4px 9px #1a1c21,-4px -4px 9px #2e3138;
+  --inset:inset 3px 3px 7px #1a1c21,inset -3px -3px 7px #2e3138}
+.d-neu{background:var(--bg);color:var(--text)}
+.d-neu .panel,.d-neu .card{background:var(--bg);border-radius:22px;box-shadow:var(--out)}
+.d-neu .theme-toggle{background:var(--bg);box-shadow:var(--out-sm)}
+.d-neu .input{background:var(--bg);border:none;color:var(--text);border-radius:12px;padding:12px 15px;box-shadow:var(--inset)}
+.d-neu .input::placeholder{color:var(--muted)}
+.d-neu .input:focus{box-shadow:var(--inset),0 0 0 2px var(--accent)}
+.d-neu .btn{border-radius:12px}
+.d-neu .btn.primary{background:var(--accent);color:#fff;box-shadow:var(--out-sm)}
+.d-neu .btn.primary:hover{filter:brightness(1.08)}
+.d-neu .btn.primary:active,.d-neu .btn.secondary:active{box-shadow:var(--inset)}
+.d-neu .btn.secondary{background:var(--bg);color:var(--text);box-shadow:var(--out-sm)}
+.d-neu .btn.ghost{background:transparent;color:var(--muted)}
+.d-neu .btn.ghost:hover{color:var(--text)}
+.d-neu .checkbox .box{background:var(--bg);box-shadow:var(--out-sm)}
+.d-neu .checkbox input:checked+.box{background:var(--accent);box-shadow:var(--inset)}
+.d-neu .category{color:var(--accent);background:var(--bg);box-shadow:var(--out-sm)}
+.d-neu .tags span{background:var(--bg);color:var(--muted);box-shadow:var(--out-sm)}
+/* скин select */
+.d-neu .cs-btn{background:var(--bg);border-radius:12px;padding:12px 15px;box-shadow:var(--inset)}
+.d-neu .cs-btn:focus-visible{box-shadow:var(--inset),0 0 0 2px var(--accent)}
+.d-neu .cs-list{background:var(--bg);border-radius:14px;box-shadow:var(--out)}
+.d-neu .cs-option:hover,.d-neu .cs-option.active{box-shadow:var(--inset)}
+.d-neu .cs-option[aria-selected="true"]{color:var(--accent);font-weight:700}
+
+/* ============================================================
+   4. НЕО-БРУТАЛИЗМ
+============================================================ */
+.d-brut[data-theme="light"]{--bg:#f4efe3;--surface:#fffdf6;--text:#141414;--muted:#5c5c5c;--b:#141414;
+  --y:#ffd23f;--p:#ff6b9d;--c:#7ce3ff;--chip:#efe9da}
+.d-brut[data-theme="dark"]{--bg:#171717;--surface:#1f1f1f;--text:#f4efe3;--muted:#a8a29a;--b:#f4efe3;
+  --y:#ffd23f;--p:#ff6b9d;--c:#7ce3ff;--chip:#2b2b2b}
+.d-brut{background:var(--bg);color:var(--text)}
+.d-brut .theme-toggle{background:var(--surface);border:2.5px solid var(--b);border-radius:10px;box-shadow:4px 4px 0 var(--b)}
+.d-brut .panel,.d-brut .card{background:var(--surface);border:2.5px solid var(--b);border-radius:12px;box-shadow:6px 6px 0 var(--b)}
+.d-brut .input{background:var(--surface);border:2.5px solid var(--b);color:var(--text);border-radius:9px;padding:11px 14px}
+.d-brut .input::placeholder{color:var(--muted)}
+.d-brut .input:focus{border-color:var(--p)}
+.d-brut .btn{border:2.5px solid var(--b);border-radius:9px;box-shadow:4px 4px 0 var(--b);color:var(--text);
+  font-weight:800;text-transform:uppercase;font-size:12.5px;letter-spacing:.05em}
+.d-brut .btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--b)}
+.d-brut .btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--b)}
+.d-brut .btn.primary{background:var(--y);color:#141414}
+.d-brut .btn.secondary{background:var(--c);color:#141414}
+.d-brut .btn.ghost{background:var(--surface)}
+.d-brut .checkbox .box{border:2.5px solid var(--b);border-radius:7px;background:var(--surface)}
+.d-brut .checkbox input:checked+.box{background:var(--p)}
+.d-brut .checkbox input:checked+.box::after{color:#141414}
+.d-brut .category{background:var(--p);color:#141414;border:2px solid var(--b)}
+.d-brut .tags span{background:var(--chip);border:2px solid var(--b);color:var(--text)}
+/* скин select */
+.d-brut .cs-btn{background:var(--surface);border:2.5px solid var(--b);border-radius:9px;padding:11px 14px}
+.d-brut .cs-btn:focus-visible{border-color:var(--p)}
+.d-brut .cs-list{background:var(--surface);border:2.5px solid var(--b);border-radius:9px;box-shadow:5px 5px 0 var(--b)}
+.d-brut .cs-option{border:2px solid transparent;border-radius:6px;font-weight:600}
+.d-brut .cs-option:hover,.d-brut .cs-option.active{background:var(--chip);border-color:var(--b)}
+.d-brut .cs-option[aria-selected="true"]{background:var(--y);color:#141414;border-color:var(--b)}
+
+/* ============================================================
+   5. AURORA
+============================================================ */
+.d-aurora[data-theme="light"]{--text:#141a30;--muted:#5b6478;--surface:rgba(255,255,255,.75);--field:#fff;
+  --border:rgba(20,26,48,.1);--chip:rgba(124,58,237,.09);--cat:#7c3aed;--ring:rgba(124,58,237,.16);
+  background:radial-gradient(760px 480px at 8% 12%,rgba(124,58,237,.14),transparent 60%),
+    radial-gradient(760px 480px at 92% 18%,rgba(6,182,212,.14),transparent 60%),
+    radial-gradient(860px 560px at 55% 100%,rgba(236,72,153,.12),transparent 62%),#f8faff}
+.d-aurora[data-theme="dark"]{--text:#eef1fa;--muted:#8d94ab;--surface:rgba(255,255,255,.05);--field:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.1);--chip:rgba(139,92,246,.14);--cat:#a78bfa;--ring:rgba(139,92,246,.28);
+  background:radial-gradient(760px 480px at 8% 12%,rgba(124,58,237,.28),transparent 60%),
+    radial-gradient(760px 480px at 92% 18%,rgba(6,182,212,.2),transparent 60%),
+    radial-gradient(860px 560px at 55% 100%,rgba(236,72,153,.16),transparent 62%),#0a0d19}
+.d-aurora{color:var(--text)}
+.d-aurora .panel,.d-aurora .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;backdrop-filter:blur(12px);transition:.25s}
+.d-aurora .card:hover{border-color:rgba(139,92,246,.45);box-shadow:0 14px 44px rgba(124,58,237,.2)}
+.d-aurora .theme-toggle{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:12px}
+.d-aurora .input{background:var(--field);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px 15px}
+.d-aurora .input::placeholder{color:var(--muted)}
+.d-aurora .input:focus{border-color:#8b5cf6;box-shadow:0 0 0 4px var(--ring)}
+.d-aurora .btn{border-radius:12px}
+.d-aurora .btn.primary{background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;box-shadow:0 8px 22px rgba(124,58,237,.35)}
+.d-aurora .btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(124,58,237,.45)}
+.d-aurora .btn.secondary{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.d-aurora .btn.ghost{background:transparent;color:var(--muted)}
+.d-aurora .btn.ghost:hover{background:var(--chip);color:var(--text)}
+.d-aurora .checkbox .box{border:1.5px solid var(--border);background:var(--field)}
+.d-aurora .checkbox input:checked+.box{background:linear-gradient(135deg,#7c3aed,#06b6d4);border-color:transparent;box-shadow:0 4px 12px rgba(124,58,237,.4)}
+.d-aurora .category{background:var(--chip);color:var(--cat)}
+.d-aurora .tags span{background:var(--chip);color:var(--muted)}
+/* скин select */
+.d-aurora .cs-btn{background:var(--field);border:1px solid var(--border);border-radius:12px;padding:12px 15px}
+.d-aurora .cs-btn:focus-visible{border-color:#8b5cf6;box-shadow:0 0 0 4px var(--ring)}
+.d-aurora .cs-list{background:var(--field);border:1px solid var(--border);border-radius:12px;
+  backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(124,58,237,.25)}
+.d-aurora .cs-option{border-radius:8px}
+.d-aurora .cs-option:hover,.d-aurora .cs-option.active{background:var(--chip)}
+.d-aurora .cs-option[aria-selected="true"]{color:var(--cat);font-weight:700}
+
+/* ============================================================
+   6. КОМИКС
+============================================================ */
+.d-comic[data-theme="light"]{
+  --bg:#ffdf6b;--surface:#fffdf2;--bubble:#ffffff;--text:#141414;--ink:#141414;--muted:#6b6349;
+  --y:#ffd23f;--p:#ff5470;--c:#3ec7ff;--dot:rgba(20,20,20,.13);
+  background-image:radial-gradient(620px 420px at 88% 4%,rgba(255,84,112,.28),transparent 60%),
+    radial-gradient(520px 380px at 6% 96%,rgba(62,199,255,.25),transparent 60%),
+    radial-gradient(var(--dot) 1.7px,transparent 1.8px);
+  background-size:auto,auto,17px 17px}
+.d-comic[data-theme="dark"]{
+  --bg:#141a38;--surface:#1d2547;--bubble:#252e5c;--text:#f6f0da;--ink:#f6f0da;--muted:#9aa0c0;
+  --y:#ffd23f;--p:#ff5470;--c:#3ec7ff;--dot:rgba(246,240,218,.09);
+  background-image:radial-gradient(620px 420px at 88% 4%,rgba(255,84,112,.22),transparent 60%),
+    radial-gradient(520px 380px at 6% 96%,rgba(62,199,255,.18),transparent 60%),
+    radial-gradient(var(--dot) 1.7px,transparent 1.8px);
+  background-size:auto,auto,17px 17px}
+.d-comic{background-color:var(--bg);color:var(--text);font-family:'Neucha',cursive}
+.d-comic .num,.d-comic h1,.d-comic .panel h2,.d-comic .field label,.d-comic .card-title,
+.d-comic .btn,.d-comic .category,.d-comic .tags span,.d-comic .cs-btn,.d-comic .cs-option{font-family:'Russo One',sans-serif}
+.d-comic h1{letter-spacing:.03em;text-transform:uppercase;text-shadow:4px 4px 0 var(--p)}
+.d-comic .theme-toggle{background:var(--y);border:3px solid var(--ink);border-radius:6px;box-shadow:4px 4px 0 var(--ink);font-size:18px}
+.d-comic .panel,.d-comic .card{background:var(--surface);border:3.5px solid var(--ink);border-radius:6px;box-shadow:6px 6px 0 var(--ink)}
+.d-comic .panel{transform:rotate(-.3deg)}
+.d-comic .card{transform:rotate(.4deg)}
+.d-comic .input{background:var(--bubble);border:3px solid var(--ink);color:var(--text);border-radius:6px;padding:11px 14px;box-shadow:4px 4px 0 var(--ink)}
+.d-comic .input::placeholder{color:var(--muted)}
+.d-comic .input:focus{outline:none;transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.d-comic .btn{border:3px solid var(--ink);border-radius:6px;box-shadow:4px 4px 0 var(--ink);text-transform:uppercase;letter-spacing:.04em}
+.d-comic .btn.primary{background:var(--y);color:#141414}
+.d-comic .btn.secondary{background:var(--c);color:#141414}
+.d-comic .btn.ghost{background:var(--surface);color:var(--text)}
+.d-comic .btn:hover{transform:translate(-2px,-2px) rotate(-1deg);box-shadow:6px 6px 0 var(--ink)}
+.d-comic .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.d-comic .checkbox .box{border:3px solid var(--ink);border-radius:5px;background:var(--bubble);box-shadow:3px 3px 0 var(--ink)}
+.d-comic .checkbox input:checked+.box{background:var(--p)}
+.d-comic .checkbox input:checked+.box::after{color:#141414}
+.d-comic .category{background:var(--p);color:#141414;border:3px solid var(--ink);border-radius:4px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-2deg)}
+.d-comic .card-desc{position:relative;opacity:1;background:var(--bubble);border:3px solid var(--ink);border-radius:12px;padding:12px 15px;box-shadow:4px 4px 0 var(--ink)}
+.d-comic .card-desc::after{content:'';position:absolute;left:28px;bottom:-11.5px;width:15px;height:15px;
+  background:var(--bubble);border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.d-comic .tags span{background:var(--y);border:2.5px solid var(--ink);color:#141414;border-radius:4px;box-shadow:2.5px 2.5px 0 var(--ink)}
+.d-comic .tags span:nth-child(2n){background:var(--c);transform:rotate(2deg)}
+.d-comic .tags span:nth-child(2n+1){transform:rotate(-2deg)}
+/* скин select */
+.d-comic .cs-btn{background:var(--bubble);border:3px solid var(--ink);border-radius:6px;padding:11px 14px;box-shadow:4px 4px 0 var(--ink)}
+.d-comic .cs-btn:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.d-comic .cs-list{background:var(--bubble);border:3px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--ink)}
+.d-comic .cs-option{border:2.5px solid transparent;border-radius:4px;font-weight:700}
+.d-comic .cs-option:hover,.d-comic .cs-option.active{background:var(--y);border-color:var(--ink);color:#141414;transform:rotate(-1deg)}
+.d-comic .cs-option[aria-selected="true"]{background:var(--p);border-color:var(--ink);color:#141414}
+
+/* ============================================================
+   7. КИБЕРПАНК
+============================================================ */
+.d-cyber[data-theme="dark"]{
+  --bg:#06080f;--surface:#0b1120;--field:#080e1a;--text:#dff3ff;--muted:#5c7a95;
+  --border:#1c2c44;--chip:rgba(0,240,255,.08);--scan:rgba(220,240,255,.05);
+  --nc:#00f0ff;--nm:#ff2ec4;--ny:#ffe14d;--nct:#041018;--nmbg:rgba(255,46,196,.08);
+  --ring:0 0 0 1px rgba(0,240,255,.8),0 0 16px rgba(0,240,255,.3);
+  --glow-c:0 0 9px rgba(0,240,255,.45);--glow-m:0 0 9px rgba(255,46,196,.45);
+  --glow-ch:0 0 14px rgba(0,240,255,.6);--glow-mh:0 0 12px rgba(255,46,196,.5);
+  background-image:radial-gradient(700px 420px at 85% 0%,rgba(255,46,196,.14),transparent 60%),
+    radial-gradient(700px 420px at 5% 100%,rgba(0,240,255,.12),transparent 60%),
+    linear-gradient(rgba(0,240,255,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,240,255,.05) 1px,transparent 1px);
+  background-size:auto,auto,36px 36px,36px 36px}
+.d-cyber[data-theme="light"]{
+  --bg:#eef3f8;--surface:#fff;--field:#f4f8fc;--text:#0b1626;--muted:#5a6d82;
+  --border:#d7e1ec;--chip:rgba(0,180,216,.1);--scan:rgba(10,30,60,.045);
+  --nc:#00b4d8;--nm:#e5188f;--ny:#cf7a00;--nct:#032530;--nmbg:rgba(229,24,143,.07);
+  --ring:0 0 0 1px rgba(0,180,216,.7),0 0 10px rgba(0,180,216,.16);
+  --glow-c:0 3px 10px rgba(0,180,216,.3);--glow-m:0 3px 10px rgba(229,24,143,.22);
+  --glow-ch:0 4px 14px rgba(0,180,216,.4);--glow-mh:0 4px 12px rgba(229,24,143,.35);
+  background-image:radial-gradient(700px 420px at 85% 0%,rgba(229,24,143,.08),transparent 60%),
+    radial-gradient(700px 420px at 5% 100%,rgba(0,180,216,.08),transparent 60%),
+    linear-gradient(rgba(11,80,120,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(11,80,120,.08) 1px,transparent 1px);
+  background-size:auto,auto,36px 36px,36px 36px}
+.d-cyber{position:relative;background-color:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace}
+.d-cyber::after{content:'';position:absolute;inset:0;border-radius:28px;pointer-events:none;
+  background:repeating-linear-gradient(0deg,var(--scan) 0 1px,transparent 1px 3px)}
+.d-cyber h1{text-shadow:0 0 18px rgba(0,240,255,.35)}
+.d-cyber .theme-toggle{background:var(--surface);border:1px solid var(--border);color:var(--nc);border-radius:3px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%)}
+.d-cyber .panel{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--nc);border-radius:3px}
+.d-cyber .card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:3px;transition:border-color .2s}
+.d-cyber .card:hover{border-color:var(--nc)}
+.d-cyber .card::before,.d-cyber .card::after{content:'';position:absolute;width:26px;height:26px;pointer-events:none}
+.d-cyber .card::before{top:-2px;left:-2px;border-top:2px solid var(--nc);border-left:2px solid var(--nc);filter:drop-shadow(0 0 5px var(--nc))}
+.d-cyber .card::after{bottom:-2px;right:-2px;border-bottom:2px solid var(--nm);border-right:2px solid var(--nm);filter:drop-shadow(0 0 5px var(--nm))}
+.d-cyber .input{background:var(--field);border:1px solid var(--border);color:var(--text);border-radius:3px;padding:11px 14px}
+.d-cyber .input::placeholder{color:var(--muted)}
+.d-cyber .input:focus{border-color:var(--nc);box-shadow:var(--ring)}
+.d-cyber .btn{border-radius:2px;font-weight:700;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%)}
+.d-cyber .btn.primary{background:var(--nc);color:var(--nct);filter:drop-shadow(var(--glow-c))}
+.d-cyber .btn.primary:hover{filter:drop-shadow(var(--glow-ch)) brightness(1.07)}
+.d-cyber .btn.secondary{background:var(--nmbg);border:1px solid var(--nm);color:var(--nm);filter:drop-shadow(var(--glow-m))}
+.d-cyber .btn.secondary:hover{filter:drop-shadow(var(--glow-mh))}
+.d-cyber .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.d-cyber .btn.ghost:hover{border-color:var(--nc);color:var(--nc)}
+.d-cyber .btn:active{transform:translateY(1px)}
+.d-cyber .checkbox .box{border:1.5px solid var(--border);border-radius:3px;background:var(--field)}
+.d-cyber .checkbox input:checked+.box{background:var(--nc);border-color:var(--nc);box-shadow:var(--glow-c)}
+.d-cyber .checkbox input:checked+.box::after{color:var(--nct)}
+.d-cyber .category{background:var(--nmbg);border:1px solid var(--nm);color:var(--nm);border-radius:2px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%)}
+.d-cyber .card-title{text-shadow:0 0 14px rgba(0,240,255,.3)}
+.d-cyber .tags span{background:var(--chip);border:1px solid var(--border);color:var(--nc);border-radius:2px}
+.d-cyber .tags span:nth-child(2n){color:var(--nm)}
+/* скин select */
+.d-cyber .cs-btn{background:var(--field);border:1px solid var(--border);border-radius:3px;padding:11px 14px}
+.d-cyber .cs-btn:focus-visible{border-color:var(--nc);box-shadow:var(--ring)}
+.d-cyber .cs-list{background:var(--field);border:1px solid var(--nc);border-radius:3px;box-shadow:var(--glow-ch)}
+.d-cyber .cs-option{border-radius:2px}
+.d-cyber .cs-option:hover,.d-cyber .cs-option.active{background:var(--chip);color:var(--nc)}
+.d-cyber .cs-option[aria-selected="true"]{color:var(--nc);font-weight:700;text-shadow:0 0 8px rgba(0,240,255,.45)}
+
+/* ============================================================
+   8. ПАЛИТРЫ (справочник)
+============================================================ */
+.pal{background:#0b0d13;color:#e8eaf2}
+.pal-block+.pal-block{margin-top:36px;padding-top:28px;border-top:1px solid #1b1f2a}
+.pal-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.pal-head h3{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.pal-head .idx{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#585f75;font-size:14px;margin-right:10px}
+.pal-note{font-size:12px;color:#6d7488}
+.pal-theme{margin-bottom:18px}
+.pal-theme-name{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8b91a5;margin-bottom:10px}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:10px}
+.pal .sw{background:#14161d;border:1px solid #242836;border-radius:12px;padding:10px;display:grid;gap:5px;align-content:start;cursor:pointer;transition:transform .15s,border-color .15s}
+.pal .sw:hover{border-color:#3d4459;transform:translateY(-2px)}
+.pal .sw-c{height:44px;border-radius:8px;border:1px solid rgba(255,255,255,.14)}
+.pal .sw-c.sh{margin:6px 12px 16px}
+.pal .sw-c.t{background-image:linear-gradient(45deg,rgba(255,255,255,.08) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.08) 75%),
+  linear-gradient(45deg,rgba(255,255,255,.08) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.08) 75%);
+  background-size:12px 12px;background-position:0 0,6px 6px}
+.pal .sw-v{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;font-weight:700;color:#c9cfe2}
+.pal .sw-d{font-size:11.5px;line-height:1.45;color:#8b91a5}
+.pal .sw-h{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.5px;color:#5d6478}
+
+/* ---------- Тост ---------- */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);opacity:0;pointer-events:none;z-index:99;
+  background:#1d2130;border:1px solid #343a4e;color:#e8eaf2;padding:10px 16px;border-radius:10px;font-size:12.5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;transition:.25s;max-width:90vw}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#s1">01 Минимализм</a><a href="#s2">02 Глассморфизм</a><a href="#s3">03 Неоморфизм</a>
+  <a href="#s4">04 Нео-брутализм</a><a href="#s5">05 Aurora</a><a href="#s6">06 Комикс</a>
+  <a href="#s7">07 Киберпанк</a><a href="#s8">08 Палитры</a>
+</nav>
+
+<!-- ============ 1. МИНИМАЛИЗМ ============ -->
+<section class="showcase d-minimal" id="s1" data-theme="light">
+  <header class="top">
+    <div><div class="num">Стиль 01</div><h1>Минимализм</h1>
+      <p class="sub">Чистые линии, тонкие границы и сдержанные тени — в духе Linear и Notion. Инвертированная кнопка как главный акцент.</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">🌙</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="m-email">Email</label>
+        <input class="input" id="m-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="m-role">Роль</label>
+        <div class="select-wrap"><select id="m-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Дизайнер</option><option>Разработчик</option><option>Продакт-менеджер</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Запомнить меня</label>
+      <div class="btn-row">
+        <button class="btn primary">Основная</button>
+        <button class="btn secondary">Вторичная</button>
+        <button class="btn ghost">Призрачная</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">Продукт</span>
+      <h3 class="card-title">Дизайн-система для стартапа</h3>
+      <p class="card-desc">Готовый набор компонентов с токенами, тёмной и светлой темой. Легко кастомизируется под ваш бренд и масштабируется вместе с продуктом.</p>
+      <div class="tags"><span>#figma</span><span>#ui-kit</span><span>#tokens</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Открыть</button>
+        <button class="btn secondary">Сохранить</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 2. ГЛАССМОРФИЗМ ============ -->
+<section class="showcase d-glass" id="s2" data-theme="dark">
+  <header class="top">
+    <div><div class="num">Стиль 02</div><h1>Глассморфизм</h1>
+      <p class="sub">Матовое стекло, размытие фона и светящиеся градиенты. Панели пропускают цвет фона насквозь.</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">☀️</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="g-email">Email</label>
+        <input class="input" id="g-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="g-role">Роль</label>
+        <div class="select-wrap"><select id="g-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Дизайнер</option><option>Разработчик</option><option>Продакт-менеджер</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Запомнить меня</label>
+      <div class="btn-row">
+        <button class="btn primary">Основная</button>
+        <button class="btn secondary">Вторичная</button>
+        <button class="btn ghost">Призрачная</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">Аналитика</span>
+      <h3 class="card-title">Дашборд в реальном времени</h3>
+      <p class="card-desc">Метрики, воронки и живые графики в одном стеклянном интерфейсе. Данные обновляются каждую секунду, не отвлекая от работы.</p>
+      <div class="tags"><span>#saas</span><span>#charts</span><span>#realtime</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Открыть</button>
+        <button class="btn secondary">Сохранить</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 3. НЕОМОРФИЗМ ============ -->
+<section class="showcase d-neu" id="s3" data-theme="light">
+  <header class="top">
+    <div><div class="num">Стиль 03</div><h1>Неоморфизм</h1>
+      <p class="sub">Soft UI: мягкие двойные тени, «выдавленные» поля ввода и тактильные нажатия кнопок.</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">🌙</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="n-email">Email</label>
+        <input class="input" id="n-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="n-role">Роль</label>
+        <div class="select-wrap"><select id="n-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Дизайнер</option><option>Разработчик</option><option>Продакт-менеджер</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Запомнить меня</label>
+      <div class="btn-row">
+        <button class="btn primary">Основная</button>
+        <button class="btn secondary">Вторичная</button>
+        <button class="btn ghost">Призрачная</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">Умный дом</span>
+      <h3 class="card-title">Контроллер освещения</h3>
+      <p class="card-desc">Управляйте светом, климатом и сценариями с одного экрана. Мягкие тени подсказывают, какой элемент нажимается, а какой утоплен.</p>
+      <div class="tags"><span>#iot</span><span>#home</span><span>#soft-ui</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Открыть</button>
+        <button class="btn secondary">Сохранить</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 4. НЕО-БРУТАЛИЗМ ============ -->
+<section class="showcase d-brut" id="s4" data-theme="light">
+  <header class="top">
+    <div><div class="num">Стиль 04</div><h1>Нео-брутализм</h1>
+      <p class="sub">Жирные границы, жёсткие тени без размытия и смелые цвета. Кнопки «вдавливаются» при клике.</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">🌙</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="b-email">Email</label>
+        <input class="input" id="b-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="b-role">Роль</label>
+        <div class="select-wrap"><select id="b-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Дизайнер</option><option>Разработчик</option><option>Продакт-менеджер</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Запомнить меня</label>
+      <div class="btn-row">
+        <button class="btn primary">Основная</button>
+        <button class="btn secondary">Вторичная</button>
+        <button class="btn ghost">Призрачная</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">Маркетинг</span>
+      <h3 class="card-title">Лендинг, который кричит</h3>
+      <p class="card-desc">Никаких полутонов: жирный шрифт, контрастные плашки и тени, которые видно из космоса. Конверсия растёт от одного вида.</p>
+      <div class="tags"><span>#bold</span><span>#poster</span><span>#loud</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Открыть</button>
+        <button class="btn secondary">Сохранить</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 5. AURORA ============ -->
+<section class="showcase d-aurora" id="s5" data-theme="dark">
+  <header class="top">
+    <div><div class="num">Стиль 05</div><h1>Aurora</h1>
+      <p class="sub">Градиентные «полярные сияния», свечение и стеклянные панели — современный SaaS-стиль. Карточка подсвечивается при наведении.</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">☀️</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="a-email">Email</label>
+        <input class="input" id="a-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="a-role">Роль</label>
+        <div class="select-wrap"><select id="a-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Дизайнер</option><option>Разработчик</option><option>Продакт-менеджер</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Запомнить меня</label>
+      <div class="btn-row">
+        <button class="btn primary">Основная</button>
+        <button class="btn secondary">Вторичная</button>
+        <button class="btn ghost">Призрачная</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">SaaS</span>
+      <h3 class="card-title">Платформа для команд</h3>
+      <p class="card-desc">Задачи, документы и чаты в одном рабочем пространстве. Градиентные акценты ведут взгляд к главному действию.</p>
+      <div class="tags"><span>#gradient</span><span>#glow</span><span>#dark-mode</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Открыть</button>
+        <button class="btn secondary">Сохранить</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 6. КОМИКС ============ -->
+<section class="showcase d-comic" id="s6" data-theme="light">
+  <header class="top">
+    <div><div class="num">Стиль 06</div><h1>Комикс</h1>
+      <p class="sub">Точки Бен-Дея, жирный контур, речевые пузыри и жёсткие тени — поп-арт в браузере. В тёмной теме выходит «ночной выпуск».</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">🌙</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="c-email">Email</label>
+        <input class="input" id="c-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="c-role">Роль</label>
+        <div class="select-wrap"><select id="c-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Художник</option><option>Сценарист</option><option>Супергерой</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Запомнить меня</label>
+      <div class="btn-row">
+        <button class="btn primary">Бум!</button>
+        <button class="btn secondary">Вжух!</button>
+        <button class="btn ghost">Хлоп!</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">Поп-арт!</span>
+      <h3 class="card-title">Герой нового выпуска</h3>
+      <p class="card-desc">Описание здесь — как реплика героя: в речевом пузыре с хвостиком. Панели наклеены слегка криво, как стикеры в скетчбуке.</p>
+      <div class="tags"><span>#pow</span><span>#bang</span><span>#halftone</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Читать</button>
+        <button class="btn secondary">В избранное</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 7. КИБЕРПАНК ============ -->
+<section class="showcase d-cyber" id="s7" data-theme="dark">
+  <header class="top">
+    <div><div class="num">Стиль 07</div><h1>Киберпанк</h1>
+      <p class="sub">Неоновые контуры, срезанные углы, сетка на фоне и лёгкие сканлайны, как на CRT-мониторе. Днём — «чертёж», ночью — свет города.</p></div>
+    <button class="theme-toggle" onclick="toggleTheme(this)" aria-label="Переключить тему">☀️</button>
+  </header>
+  <div class="layout">
+    <div class="panel">
+      <h2>Компоненты</h2>
+      <div class="field"><label for="k-email">Email</label>
+        <input class="input" id="k-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="k-role">Роль</label>
+        <div class="select-wrap"><select id="k-role">
+          <option value="" disabled selected>Выберите роль</option>
+          <option>Нетраннер</option><option>Техномант</option><option>Фиксер</option>
+        </select></div></div>
+      <label class="checkbox"><input type="checkbox"><span class="box"></span>Джек в сеть</label>
+      <div class="btn-row">
+        <button class="btn primary">Запустить</button>
+        <button class="btn secondary">Синхронизировать</button>
+        <button class="btn ghost">Отключить</button>
+      </div>
+    </div>
+    <article class="card">
+      <span class="category">Сеть</span>
+      <h3 class="card-title">Взлом корпоративного узла</h3>
+      <p class="card-desc">Углы срезаны, контуры светятся, сканлайны едва дрожат. Интерфейс из 2077-го: выбираешь роль, жмёшь «Запустить» — и город твой.</p>
+      <div class="tags"><span>#neon</span><span>#grid</span><span>#2077</span></div>
+      <div class="card-actions">
+        <button class="btn primary">Подключиться</button>
+        <button class="btn secondary">В закладки</button>
+        <button class="btn ghost icon">♥</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 8. ПАЛИТРЫ (справочник) ============ -->
+<section class="showcase pal" id="s8">
+  <header class="top">
+    <div><div class="num">Справочник</div><h1>Цветовые палитры</h1>
+      <p class="sub">Все переменные семи стилей для светлой и тёмной темы — с описанием, за что отвечает каждый цвет. Нажмите на образец, чтобы скопировать значение: у теней и градиентов копируется готовый CSS.</p></div>
+  </header>
+  <div id="palettes"></div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     СКРИПТ 1: Переключение темы (изолирован от остального кода)
+============================================================ -->
+<script>
+function toggleTheme(btn){
+  const s = btn.closest('.showcase');
+  s.dataset.theme = s.dataset.theme === 'dark' ? 'light' : 'dark';
+  btn.textContent = s.dataset.theme === 'dark' ? '☀️' : '🌙';
+}
+</script>
+
+<!-- ============================================================
+     СКРИПТ 2: Кастомный select
+     Строится поверх существующих <select>; нативный элемент
+     остаётся рабочим: value, формы, событие change.
+============================================================ -->
+<script>
+(function(){
+  function closeAll(){
+    document.querySelectorAll('.select-wrap[data-open="true"]').forEach(w => {
+      w.dataset.open = 'false';
+      const b = w.querySelector('.cs-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  document.querySelectorAll('.select-wrap').forEach(wrap => {
+    const sel = wrap.querySelector('select');
+    if (!sel) return;
+    sel.hidden = true;
+    wrap.classList.add('cs');
+
+    /* --- кнопка --- */
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cs-btn';
+    btn.setAttribute('aria-haspopup', 'listbox');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = '<span class="cs-value"></span><span class="cs-arrow">▾</span>';
+    const label = btn.querySelector('.cs-value');
+
+    /* --- список --- */
+    const list = document.createElement('ul');
+    list.className = 'cs-list';
+    list.setAttribute('role', 'listbox');
+    list.tabIndex = -1;
+
+    const items = [...sel.options].map((o, i) => {
+      const li = document.createElement('li');
+      li.className = 'cs-option' + (o.disabled ? ' ph' : '');
+      li.setAttribute('role', 'option');
+      li.textContent = o.textContent;
+      li.addEventListener('click', () => { if (!o.disabled) pick(i); });
+      list.append(li);
+      return li;
+    });
+
+    /* --- логика --- */
+    let active = 0;
+
+    function sync(){
+      const o = sel.options[sel.selectedIndex];
+      label.textContent = o ? o.textContent : '';
+      label.classList.toggle('ph', !!(o && o.disabled));
+      items.forEach((li, i) => li.setAttribute('aria-selected', i === sel.selectedIndex ? 'true' : 'false'));
+    }
+
+    function paintActive(){
+      items.forEach((li, i) => li.classList.toggle('active', i === active));
+      if (items[active]) items[active].scrollIntoView({ block: 'nearest' });
+    }
+
+    function open(){
+      closeAll();
+      wrap.dataset.open = 'true';
+      btn.setAttribute('aria-expanded', 'true');
+      active = sel.selectedIndex;
+      paintActive();
+      list.focus({ preventScroll: true });
+    }
+
+    function close(){
+      wrap.dataset.open = 'false';
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function pick(i){
+      sel.selectedIndex = i;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      sync();
+      close();
+      btn.focus();
+    }
+
+    function move(d){
+      let i = active;
+      for (let k = 0; k < items.length; k++) {
+        i = Math.min(items.length - 1, Math.max(0, i + d));
+        if (!sel.options[i].disabled) break;
+      }
+      active = i;
+      paintActive();
+    }
+
+    /* --- события --- */
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      wrap.dataset.open === 'true' ? close() : open();
+    });
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (wrap.dataset.open !== 'true') open();
+      }
+    });
+
+    list.addEventListener('keydown', e => {
+      const k = e.key;
+      if (k === 'ArrowDown')    { e.preventDefault(); move(1); }
+      else if (k === 'ArrowUp') { e.preventDefault(); move(-1); }
+      else if (k === 'Home')    { e.preventDefault(); active = 0; paintActive(); }
+      else if (k === 'End')     { e.preventDefault(); active = items.length - 1; paintActive(); }
+      else if (k === 'Enter' || k === ' ') { e.preventDefault(); if (!sel.options[active].disabled) pick(active); }
+      else if (k === 'Escape')  { e.preventDefault(); close(); btn.focus(); }
+      else if (k === 'Tab')     { close(); }
+    });
+    list.addEventListener('click', e => e.stopPropagation());
+
+    wrap.append(btn, list);
+    sync();
+  });
+
+  /* клик мимо — закрыть все открытые списки */
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.select-wrap')) closeAll();
+  });
+})();
+</script>
+
+<!-- ============================================================
+     СКРИПТ 3: Справочник палитр
+============================================================ -->
+<script>
+(function(){
+  const S = (v, d, s, h, copy) => {
+    const hx = h || s.split(':').pop();
+    return { v, d, s, h: hx, copy: copy || hx };
+  };
+
+  const P = [
+    {
+      name: 'Минимализм',
+      note: '12 переменных · в тёмной теме primary-кнопка светлая (инверсия)',
+      light: [
+        S('--bg', 'Фон секции', 'background-color:#f6f7f9'),
+        S('--surface', 'Панели и карточки', 'background-color:#ffffff'),
+        S('--surface2', 'Вторичные кнопки', 'background-color:#f0f1f4'),
+        S('--text', 'Основной текст', 'background-color:#181a20'),
+        S('--muted', 'Плейсхолдеры, вторичный текст', 'background-color:#6d7280'),
+        S('--border', 'Границы панелей и полей', 'background-color:#e4e6eb'),
+        S('--accent', 'Рамка фокуса полей', 'background-color:#4f6ef7'),
+        S('--primary', 'Фон primary-кнопки', 'background-color:#181a20'),
+        S('--primary-h', 'Primary-кнопка: ховер', 'background-color:#2b2d35'),
+        S('--primary-text', 'Текст primary-кнопки', 'background-color:#ffffff'),
+        S('--ring', 'Свечение фокуса полей (3px)', 'background-color:rgba(79,110,247,.22)'),
+        S('--chip', 'Категория и теги', 'background-color:#f0f1f4')
+      ],
+      dark: [
+        S('--bg', 'Фон секции', 'background-color:#0e0f13'),
+        S('--surface', 'Панели и карточки', 'background-color:#15161b'),
+        S('--surface2', 'Вторичные кнопки', 'background-color:#1e2027'),
+        S('--text', 'Основной текст', 'background-color:#f4f5f7'),
+        S('--muted', 'Плейсхолдеры, вторичный текст', 'background-color:#8f95a3'),
+        S('--border', 'Границы панелей и полей', 'background-color:#272a33'),
+        S('--accent', 'Рамка фокуса полей', 'background-color:#6d8bff'),
+        S('--primary', 'Фон primary-кнопки', 'background-color:#f4f5f7'),
+        S('--primary-h', 'Primary-кнопка: ховер', 'background-color:#dcdee4'),
+        S('--primary-text', 'Текст primary-кнопки', 'background-color:#0e0f13'),
+        S('--ring', 'Свечение фокуса полей (3px)', 'background-color:rgba(109,139,255,.25)'),
+        S('--chip', 'Категория и теги', 'background-color:#1e2027')
+      ]
+    },
+    {
+      name: 'Глассморфизм',
+      note: 'полупрозрачные цвета показаны на «шахматке»',
+      light: [
+        S('--text', 'Основной текст', 'background-color:#221d3a'),
+        S('--muted', 'Вторичный текст', 'background-color:#6b6488'),
+        S('--glass', 'Стекло панелей и карточек', 'background-color:rgba(255,255,255,.5)'),
+        S('--glass2', 'Стекло полей и secondary-кнопок', 'background-color:rgba(255,255,255,.75)'),
+        S('--gborder', 'Светлая кромка стекла', 'background-color:rgba(255,255,255,.7)'),
+        S('--chip', 'Категория и теги', 'background-color:rgba(255,255,255,.55)'),
+        S('пятно 1', 'Розовое пятно фона (radial)', 'background-color:#ffd2e6'),
+        S('пятно 2', 'Голубое пятно фона (radial)', 'background-color:#c9e2ff'),
+        S('пятно 3', 'Лиловое пятно фона (radial)', 'background-color:#d9ccff'),
+        S('подложка', 'Базовый цвет фона', 'background-color:#f2eefb'),
+        S('btn primary', 'Градиент основной кнопки', 'background:linear-gradient(135deg,#8b5cf6,#ec4899)', '#8b5cf6 → #ec4899', 'linear-gradient(135deg,#8b5cf6,#ec4899)')
+      ],
+      dark: [
+        S('--text', 'Основной текст', 'background-color:#f1eefb'),
+        S('--muted', 'Вторичный текст', 'background-color:#a89fc9'),
+        S('--glass', 'Стекло панелей и карточек', 'background-color:rgba(28,22,58,.42)'),
+        S('--glass2', 'Стекло полей и secondary-кнопок', 'background-color:rgba(48,40,96,.5)'),
+        S('--gborder', 'Светлая кромка стекла', 'background-color:rgba(255,255,255,.13)'),
+        S('--chip', 'Категория и теги', 'background-color:rgba(255,255,255,.09)'),
+        S('пятно 1', 'Пурпурное пятно фона (radial)', 'background-color:#3b1d78'),
+        S('пятно 2', 'Синее пятно фона (radial)', 'background-color:#122a66'),
+        S('пятно 3', 'Малиновое пятно фона (radial)', 'background-color:#5c1747'),
+        S('подложка', 'Базовый цвет фона', 'background-color:#0b0a17'),
+        S('btn primary', 'Градиент основной кнопки', 'background:linear-gradient(135deg,#8b5cf6,#ec4899)', '#8b5cf6 → #ec4899', 'linear-gradient(135deg,#8b5cf6,#ec4899)')
+      ]
+    },
+    {
+      name: 'Неоморфизм',
+      note: 'свет всегда слева сверху — светлая грань, тень справа снизу',
+      light: [
+        S('--bg', 'Единый фон всех поверхностей', 'background-color:#e3e7f0'),
+        S('--text', 'Основной текст', 'background-color:#2b3040'),
+        S('--muted', 'Плейсхолдеры', 'background-color:#7a8095'),
+        S('--accent', 'Primary-кнопка, фокус, чекбокс', 'background-color:#6c5ce7'),
+        S('--out', 'Тень панелей «наружу»', 'background-color:#e3e7f0;box-shadow:7px 7px 14px #c5cbd9, -7px -7px 14px #ffffff', '#c5cbd9 + #ffffff', '7px 7px 14px #c5cbd9, -7px -7px 14px #ffffff'),
+        S('--out-sm', 'Тень кнопок, чипов, тумблера', 'background-color:#e3e7f0;box-shadow:4px 4px 9px #c5cbd9, -4px -4px 9px #ffffff', '#c5cbd9 + #ffffff', '4px 4px 9px #c5cbd9, -4px -4px 9px #ffffff'),
+        S('--inset', 'Вдавливание полей и нажатий', 'background-color:#e3e7f0;box-shadow:inset 3px 3px 7px #c5cbd9, inset -3px -3px 7px #ffffff', '#c5cbd9 + #ffffff', 'inset 3px 3px 7px #c5cbd9, inset -3px -3px 7px #ffffff')
+      ],
+      dark: [
+        S('--bg', 'Единый фон всех поверхностей', 'background-color:#24262c'),
+        S('--text', 'Основной текст', 'background-color:#e8eaf0'),
+        S('--muted', 'Плейсхолдеры', 'background-color:#8b90a0'),
+        S('--accent', 'Primary-кнопка, фокус, чекбокс', 'background-color:#8b7cf7'),
+        S('--out', 'Тень панелей «наружу»', 'background-color:#24262c;box-shadow:7px 7px 14px #1a1c21, -7px -7px 14px #2e3138', '#1a1c21 + #2e3138', '7px 7px 14px #1a1c21, -7px -7px 14px #2e3138'),
+        S('--out-sm', 'Тень кнопок, чипов, тумблера', 'background-color:#24262c;box-shadow:4px 4px 9px #1a1c21, -4px -4px 9px #2e3138', '#1a1c21 + #2e3138', '4px 4px 9px #1a1c21, -4px -4px 9px #2e3138'),
+        S('--inset', 'Вдавливание полей и нажатий', 'background-color:#24262c;box-shadow:inset 3px 3px 7px #1a1c21, inset -3px -3px 7px #2e3138', '#1a1c21 + #2e3138', 'inset 3px 3px 7px #1a1c21, inset -3px -3px 7px #2e3138')
+      ]
+    },
+    {
+      name: 'Нео-брутализм',
+      note: 'контур --b также работает цветом жёстких теней',
+      light: [
+        S('--bg', 'Фон секции', 'background-color:#f4efe3'),
+        S('--surface', 'Панели и карточки', 'background-color:#fffdf6'),
+        S('--text', 'Основной текст', 'background-color:#141414'),
+        S('--muted', 'Плейсхолдеры', 'background-color:#5c5c5c'),
+        S('--b', 'Контур и жёсткие тени', 'background-color:#141414'),
+        S('--y', 'Primary-кнопка', 'background-color:#ffd23f'),
+        S('--p', 'Категория, фокус полей, чекбокс', 'background-color:#ff6b9d'),
+        S('--c', 'Secondary-кнопка', 'background-color:#7ce3ff'),
+        S('--chip', 'Теги', 'background-color:#efe9da')
+      ],
+      dark: [
+        S('--bg', 'Фон секции', 'background-color:#171717'),
+        S('--surface', 'Панели и карточки', 'background-color:#1f1f1f'),
+        S('--text', 'Основной текст', 'background-color:#f4efe3'),
+        S('--muted', 'Плейсхолдеры', 'background-color:#a8a29a'),
+        S('--b', 'Контур и тени (инвертирован в кремовый)', 'background-color:#f4efe3'),
+        S('--y', 'Primary-кнопка', 'background-color:#ffd23f'),
+        S('--p', 'Категория, фокус полей, чекбокс', 'background-color:#ff6b9d'),
+        S('--c', 'Secondary-кнопка', 'background-color:#7ce3ff'),
+        S('--chip', 'Теги', 'background-color:#2b2b2b')
+      ]
+    },
+    {
+      name: 'Aurora',
+      note: '3 сияния + стеклянные панели поверх подложки',
+      light: [
+        S('--text', 'Основной текст', 'background-color:#141a30'),
+        S('--muted', 'Вторичный текст', 'background-color:#5b6478'),
+        S('--surface', 'Стекло панелей (blur 12px)', 'background-color:rgba(255,255,255,.75)'),
+        S('--field', 'Поля ввода', 'background-color:#ffffff'),
+        S('--border', 'Границы панелей и полей', 'background-color:rgba(20,26,48,.1)'),
+        S('--chip', 'Категория и теги', 'background-color:rgba(124,58,237,.09)'),
+        S('--cat', 'Текст категории', 'background-color:#7c3aed'),
+        S('--ring', 'Ореол фокуса полей (4px)', 'background-color:rgba(124,58,237,.16)'),
+        S('сияние 1', 'Фиолетовое · слева сверху', 'background-color:rgba(124,58,237,.14)'),
+        S('сияние 2', 'Бирюзовое · справа сверху', 'background-color:rgba(6,182,212,.14)'),
+        S('сияние 3', 'Розовое · снизу', 'background-color:rgba(236,72,153,.12)'),
+        S('подложка', 'Базовый цвет фона', 'background-color:#f8faff'),
+        S('btn primary', 'Градиент primary-кнопки и чекбокса', 'background:linear-gradient(135deg,#7c3aed,#06b6d4)', '#7c3aed → #06b6d4', 'linear-gradient(135deg,#7c3aed,#06b6d4)')
+      ],
+      dark: [
+        S('--text', 'Основной текст', 'background-color:#eef1fa'),
+        S('--muted', 'Вторичный текст', 'background-color:#8d94ab'),
+        S('--surface', 'Стекло панелей (blur 12px)', 'background-color:rgba(255,255,255,.05)'),
+        S('--field', 'Поля ввода', 'background-color:rgba(255,255,255,.06)'),
+        S('--border', 'Границы панелей и полей', 'background-color:rgba(255,255,255,.1)'),
+        S('--chip', 'Категория и теги', 'background-color:rgba(139,92,246,.14)'),
+        S('--cat', 'Текст категории', 'background-color:#a78bfa'),
+        S('--ring', 'Ореол фокуса полей (4px)', 'background-color:rgba(139,92,246,.28)'),
+        S('сияние 1', 'Фиолетовое · слева сверху', 'background-color:rgba(124,58,237,.28)'),
+        S('сияние 2', 'Бирюзовое · справа сверху', 'background-color:rgba(6,182,212,.2)'),
+        S('сияние 3', 'Розовое · снизу', 'background-color:rgba(236,72,153,.16)'),
+        S('подложка', 'Базовый цвет фона', 'background-color:#0a0d19'),
+        S('btn primary', 'Градиент primary-кнопки и чекбокса', 'background:linear-gradient(135deg,#7c3aed,#06b6d4)', '#7c3aed → #06b6d4', 'linear-gradient(135deg,#7c3aed,#06b6d4)')
+      ]
+    },
+    {
+      name: 'Комикс',
+      note: 'контур --ink инвертируется в тёмной «ночной» теме',
+      light: [
+        S('--bg', 'Жёлтый «постер» фона', 'background-color:#ffdf6b'),
+        S('--surface', 'Панели и карточки', 'background-color:#fffdf2'),
+        S('--bubble', 'Речевые пузыри и поля', 'background-color:#ffffff'),
+        S('--text', 'Основной текст', 'background-color:#141414'),
+        S('--ink', 'Контуры и жёсткие тени', 'background-color:#141414'),
+        S('--muted', 'Плейсхолдеры', 'background-color:#6b6349'),
+        S('--y', 'Primary-кнопка и теги', 'background-color:#ffd23f'),
+        S('--p', 'Категория, чекбокс, тень заголовка', 'background-color:#ff5470'),
+        S('--c', 'Secondary-кнопка', 'background-color:#3ec7ff'),
+        S('--dot', 'Точки Бен-Дея · шаг 17px', 'background-color:rgba(20,20,20,.13)')
+      ],
+      dark: [
+        S('--bg', 'Фон · «ночной выпуск»', 'background-color:#141a38'),
+        S('--surface', 'Панели и карточки', 'background-color:#1d2547'),
+        S('--bubble', 'Речевые пузыри и поля', 'background-color:#252e5c'),
+        S('--text', 'Основной текст', 'background-color:#f6f0da'),
+        S('--ink', 'Контуры и жёсткие тени', 'background-color:#f6f0da'),
+        S('--muted', 'Плейсхолдеры', 'background-color:#9aa0c0'),
+        S('--y', 'Primary-кнопка и теги', 'background-color:#ffd23f'),
+        S('--p', 'Категория, чекбокс, тень заголовка', 'background-color:#ff5470'),
+        S('--c', 'Secondary-кнопка', 'background-color:#3ec7ff'),
+        S('--dot', 'Точки Бен-Дея · шаг 17px', 'background-color:rgba(246,240,218,.09)')
+      ]
+    },
+    {
+      name: 'Киберпанк',
+      note: 'неон на срезанных углах; свечение заметнее всего в тёмной теме',
+      light: [
+        S('--bg', 'Фон секции с сеткой', 'background-color:#eef3f8'),
+        S('--surface', 'Панели и карточки', 'background-color:#ffffff'),
+        S('--field', 'Поля ввода', 'background-color:#f4f8fc'),
+        S('--text', 'Основной текст', 'background-color:#0b1626'),
+        S('--muted', 'Плейсхолдеры, вторичный текст', 'background-color:#5a6d82'),
+        S('--border', 'Границы панелей и полей', 'background-color:#d7e1ec'),
+        S('--chip', 'Фон тегов', 'background-color:rgba(0,180,216,.1)'),
+        S('--nc', 'Неон-циан: primary, фокус, скобки, теги', 'background-color:#00b4d8'),
+        S('--nm', 'Неон-маджента: категория, secondary, скобки', 'background-color:#e5188f'),
+        S('--ny', 'Резервный акцент', 'background-color:#cf7a00'),
+        S('--scan', 'Сканлайны · строка 3px', 'background-color:rgba(10,30,60,.045)'),
+        S('--ring', 'Ореол фокуса полей', 'background-color:#00b4d8;box-shadow:0 0 0 1px rgba(0,180,216,.7), 0 0 10px rgba(0,180,216,.16)', '0 0 0 1px + 0 0 10px', '0 0 0 1px rgba(0,180,216,.7), 0 0 10px rgba(0,180,216,.16)'),
+        S('сетка', 'Линии фона · шаг 36px', 'background-color:rgba(11,80,120,.08)')
+      ],
+      dark: [
+        S('--bg', 'Фон секции', 'background-color:#06080f'),
+        S('--surface', 'Панели и карточки', 'background-color:#0b1120'),
+        S('--field', 'Поля ввода', 'background-color:#080e1a'),
+        S('--text', 'Основной текст', 'background-color:#dff3ff'),
+        S('--muted', 'Плейсхолдеры, вторичный текст', 'background-color:#5c7a95'),
+        S('--border', 'Границы панелей и полей', 'background-color:#1c2c44'),
+        S('--chip', 'Фон тегов', 'background-color:rgba(0,240,255,.08)'),
+        S('--nc', 'Неон-циан: primary, фокус, скобки, теги', 'background-color:#00f0ff'),
+        S('--nm', 'Неон-маджента: категория, secondary, скобки', 'background-color:#ff2ec4'),
+        S('--ny', 'Резервный акцент', 'background-color:#ffe14d'),
+        S('--scan', 'Сканлайны · строка 3px', 'background-color:rgba(220,240,255,.05)'),
+        S('--ring', 'Ореол фокуса полей', 'background-color:#00f0ff;box-shadow:0 0 0 1px rgba(0,240,255,.8), 0 0 16px rgba(0,240,255,.3)', '0 0 0 1px + 0 0 16px', '0 0 0 1px rgba(0,240,255,.8), 0 0 16px rgba(0,240,255,.3)'),
+        S('сетка', 'Линии фона · шаг 36px', 'background-color:rgba(0,240,255,.05)')
+      ]
+    }
+  ];
+
+  /* ---------- Отрисовка ---------- */
+  document.getElementById('palettes').innerHTML = P.map((p, i) => `
+    <div class="pal-block">
+      <div class="pal-head"><h3><span class="idx">0${i + 1}</span>${p.name}</h3><span class="pal-note">${p.note}</span></div>
+      ${['light', 'dark'].map(t => `
+        <div class="pal-theme">
+          <div class="pal-theme-name">${t === 'light' ? '☀️ Светлая' : '🌙 Тёмная'}</div>
+          <div class="sw-grid">
+            ${p[t].map(it => {
+              const sh = it.s.includes('box-shadow');
+              const tr = it.s.includes('rgba(');
+              const grad = it.s.includes('linear-gradient');
+              const cls = (sh ? ' sh' : '') + (tr && !grad ? ' t' : '');
+              return `<div class="sw" data-copy="${it.copy.replace(/"/g, '&quot;')}" title="Скопировать">
+                <div class="sw-c${cls}" style="${it.s}"></div>
+                <code class="sw-v">${it.v}</code>
+                <div class="sw-d">${it.d}</div>
+                <code class="sw-h">${it.h}</code>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+
+  /* ---------- Копирование по клику ---------- */
+  const toast = document.getElementById('toast');
+  let tmr;
+
+  function fallbackCopy(text) {
+    const a = document.createElement('textarea');
+    a.value = text;
+    a.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(a);
+    a.select();
+    try { document.execCommand('copy'); } catch (_) {}
+    a.remove();
+  }
+
+  document.getElementById('palettes').addEventListener('click', e => {
+    const sw = e.target.closest('.sw');
+    if (!sw || !sw.dataset.copy) return;
+    const val = sw.dataset.copy;
+    const done = () => {
+      toast.textContent = 'Скопировано: ' + val;
+      toast.classList.add('on');
+      clearTimeout(tmr);
+      tmr = setTimeout(() => toast.classList.remove('on'), 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val).then(done).catch(() => { fallbackCopy(val); done(); });
+    } else {
+      fallbackCopy(val);
+      done();
+    }
+  });
+})();
+</script>
+</body>
+</html>

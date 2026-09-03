@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "notes": "что то улучшил, сам не понял что",
+  "pub_date": "2026-08-22T18:00:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "url": "https://github.com/Alebarto99/myHomeProject/releases/download/0.1.0/myhomeproject_0.1.0_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTbWV3b0hXNWRvbmU3T1hPQU85K3Zlb1RqWjEwT1JNaHVZSzJKWjI4YlBEelIzemp5WWppdElDbUIyc3Q2ZUV4T0ZnTWxxY3RsQW8wTUp1VlNvRzJhZjA0Vm5kaGRPL3djPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg3NDEwNzExCWZpbGU6bXlob21lcHJvamVjdF8wLjEuMF94NjQtc2V0dXAuZXhlCmlDWEJoMUFIUVBxNThPa0hrdVFaYmdyOHd5MjFVR2FjUno1UnFIdnRpdit5QkRWek5WeE1CdE9laGk0V2l3cmVYSk5EZzVBaU1rWnBpSEo3d0Jjd0JnPT0K"
+    }
+  }
+}
