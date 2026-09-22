@@ -50,6 +50,7 @@
 
 
 *{
+  
   box-sizing: border-box;
   padding: 0;
   margin: 0;
@@ -68,245 +69,6 @@ main{
 
 }
 
-.card{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background-color: var(--entity-item-bg);
-  padding: 10px;
-  border-radius: 10px;
-  border: 2px solid rgba(0,0,0,0);
-  transition: border .4s ease;
-
-
-  &:hover{
-    border: 2px solid var(--primary);
-  }
-  
-  .card-header{
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    justify-content: space-between;
-
-    .card-title{
-      border: 0;
-      background: transparent;  
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text); 
-    }
-    .card-category{
-      background-color: var(--entity-item-category);
-      padding: 5px 8px;
-      border-radius: 5px;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-  }
-  
-  .card-description{
-    background: transparent;
-    border: 0;
-    text-align: left;
-    white-space: pre-wrap;
-    color: var(--entity-text-1); 
-    display: -webkit-box;
-    -webkit-line-clamp: 4; /* Количество строк */
-    line-clamp: 3;         /* Стандартное свойство */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .card-tags{
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-
-    .tag{
-    background-color: var(--tag-bg);
-    color: var(--entity-text-1);
-    padding: 5px 5px;
-    border-radius: 5px;
-    
-
-    &::before{
-      content: "#";
-    }
-    }
-  }
-  .card-tools{
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    justify-content: end;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-  }
-}
-
-button{
-  background-color: red;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  color: var(--text);
-  transition: background-color .4s ease;
-  padding: 0px 12px;
-  -webkit-user-select: none;
-  user-select: none;
-
-  &.primary{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--primary) 16%, transparent);
-    color: var(--primary);
-
-    &:hover{
-      background-color: color-mix(in srgb, var(--primary) 25%, transparent);
-      border: 1px solid var(--primary);
-    }
-  }
-  
-  &.save{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--success) 16%, transparent);
-    color: var(--success);
-
-    &:hover{
-      background-color: color-mix(in srgb, var(--success) 25%, transparent);
-      border: 1px solid var(--success);
-    }
-  }
-
-  &.delete{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--danger) 16%, transparent);
-    color: var(--danger);
-
-    &:hover{
-      background-color: color-mix(in srgb, var(--danger) 25%, transparent);
-      border: 1px solid var(--danger);
-    }
-  }
-
-  &.edit{
-    padding: 9px 14px;
-    background-color: color-mix(in srgb, var(--warning) 16%, transparent);
-    color: var(--warning);
-
-    &:hover{
-      background-color: color-mix(in srgb, var(--warning) 25%, transparent);
-      border: 1px solid var(--warning);
-    }
-  }
-
-  &.info{
-    padding: 9px 14px;
-    background: transparent;
-    color: var(--text);
-    
-    &.active{
-      border: 1px solid var(--primary);
-      color: var(--primary);
-    }
-  }
-}
-
-aside{
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0px 5px 5px 0;
-  min-width: 300px;
-
-  .sidebar-categories{
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    .category-header{
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 5px;
-
-    }
-    .filter-form{
-      
-      &.editing-layout{
-
-        .edit-list{
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          /* background-color: green; */
-          padding-bottom: 5px;
-
-          .edit-item{
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0px 5px;
-            border-radius: 5px;
-            background-color: var(--entity-item-bg);
-            color: var(--text);
-            border: 2px solid var(--border);
-            transition: border .4s ease;
-
-            &:hover{
-              border: 2px solid var(--primary);
-
-            }
-            button{
-              background: transparent;
-              font-size: large;
-              transition: background-color .4s ease;
-
-
-              &:hover{
-                background-color: color-mix(in srgb, var(--danger) 16%, transparent);
-                color: var(--danger);
-              }
-            }
-            input{
-              border: 0;
-              outline: none;
-            }
-          }
-          .add-cat-box{
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-            input{
-              color: var(--text);
-              border-radius: 5px;
-              background-color: var(--entity-item-bg);
-              border: 2px solid var(--border);
-              flex-grow: 1;
-              background-color: --;
-
-              &:focus{
-                outline: 1px solid var(--primary);
-              }
-            }
-            button{
-              font-size: 34px;
-              padding: 0;
-              width: 50px;
-
-            }
-          }
-        }
-      }
-    }
-  }
-}
 
 input, textarea, select{
 		outline: none;
@@ -338,6 +100,20 @@ input, textarea, select{
 
 }
 
+aside{
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px; 
+  padding: 4px 4px 4px 0; 
+  min-width: 300px;
+  box-sizing: border-box;
+
+  :global(.updater-wrapper) { 
+    margin-top: auto; 
+    flex-shrink: 0;
+  }
+}
 
 @media (max-width: 600px){
   #app{
@@ -346,7 +122,7 @@ input, textarea, select{
     flex-direction: column;
   }
   aside{
-    border: 0;
+    border: 0px;
     min-width: 100%;
   }
 }

@@ -1,81 +1,110 @@
 <script lang="ts">
-let {
+  import Button from "./Button.svelte";
+  // Импортируем иконки Лупы и Крестика из Lucide
+  import { Search, X } from '@lucide/svelte';
+
+  let {
     value = $bindable(''),
     placeholder = 'Введите запрос',
-	title = '',
-} = $props();
+    title = '',
+  } = $props();
 
-let inputRef = $state<HTMLInputElement | null>(null);
+  let inputRef = $state<HTMLInputElement | null>(null);
 
-function clearInput() {
+  function clearInput() {
     value = '';
     inputRef?.focus();
   }
-
 </script>
 
-
 <div class="searchbox">
-	<svg xmlns="http://www.w3.org/2000/svg" stroke="currentColor" viewBox="0 0 16 16">
-		<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-	</svg>
-	<input spellcheck="true" bind:this={inputRef} type="text" {title} {placeholder} bind:value>
-		<button class="clear" onclick={clearInput}>X</button>
+  <!-- Современная иконка поиска вместо старого SVG -->
+  <div class="search-icon-wrapper">
+    <Search size={18} strokeWidth={2} />
+  </div>
+  
+  <input 
+    spellcheck="true" 
+    bind:this={inputRef} 
+    type="text" 
+    {title} 
+    {placeholder} 
+    bind:value
+  >
+  
+  <!-- Обертка плавно скрывает/показывает красивую кнопку стирания -->
+  <div class="clear-btn-wrapper" class:visible={value.trim() !== ''}>
+    <Button design="icon-delete" onclick={clearInput} title="Очистить поиск">
+      <!-- Иконка крестика с защитой от перехвата событий мыши -->
+      <X size={16} strokeWidth={2.5} style="pointer-events: none;" />
+    </Button>
+  </div>
 </div>
 
 <style>
-    .searchbox{
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 5px;
-		background-color: var(--bg);
-		padding: 0 0 0 11px;
-		border-radius: 10px;
-		border: 1px solid var(--border);
-        box-shadow: var(--shadow);
-		
-		input{
-			background: transparent;
-			outline: none;
-			border: 0;
-			padding: 11px 0;
-			font-size: medium;
-			color: var(--text-color);
-			flex-grow: 1;
-			min-width: 0px;
-			
-			&:not(:placeholder-shown) ~ .clear {
-				display: block;
-			}
+  .searchbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg);
+    /* Паддинг справа минимальный (4px), так как у круглой кнопки есть свои внутренние отступы */
+    padding: 0 4px 0 12px; 
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    height: 40px; /* Стабильная фиксированная высота инпута */
+    box-sizing: border-box;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
-			&::placeholder{
-				font-size: small;
-			}
-		}
+    /* Эффект фокуса на строке поиска */
+    &:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent), var(--shadow);
+    }
+    
+    .search-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-color);
+      opacity: 0.5; /* Делаем лупу слегка приглушенной */
+      flex-shrink: 0;
+    }
 
-		svg{
-			padding-right: 5px;
-			width: 20px;
-			height: 20px;
-			fill: black;
-			font-size: 24px;
-			vertical-align: top;
-		}
+    input {
+      background: transparent;
+      outline: none;
+      border: 0;
+      padding: 8px 0;
+      font-size: 0.95rem;
+      color: var(--text-color);
+      flex: 1;
+      min-width: 0px;
 
-		.clear{
-			display: none;
-			background: transparent;
-			color: var(--text);
-			margin: 0px;
-			padding: 0 15px 0 5px;
-			font-size: 18px;
-			transition: color .4s ease;
+      &::placeholder {
+        font-size: 0.9em;
+        opacity: 0.65;
+      }
+    }
 
-   		 &:hover{
-			color: #e25555;
-			/* stroke: #e25555; */
-			}
-		}
-	}
+    .clear-btn-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* По умолчанию скрываем кнопку через прозрачность и масштаб для плавности */
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      flex-shrink: 0;
+      
+      /* Класс активируется, когда в инпуте появляется текст */
+      &.visible {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+      }
+    }
+  }
 </style>

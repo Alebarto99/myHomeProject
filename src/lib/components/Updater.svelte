@@ -148,9 +148,7 @@ async function updateAndInstall() {
 </div>
 <style>
 .update-info{
-  background-color: var(--entity-item-bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
+  border-top: 1px solid var(--border);
   padding: 5px;
   display: flex;
   flex-direction: row;
